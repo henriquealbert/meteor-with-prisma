@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": []
+		"ignore": ["./prisma/**", "./node_modules/**", "./.meteor/**"]
 	},
 	"formatter": {
 		"enabled": true,

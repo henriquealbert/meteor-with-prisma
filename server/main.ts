@@ -1,35 +1,27 @@
 import { Meteor } from "meteor/meteor";
-import { type Link, LinksCollection } from "/imports/api/links";
+import { prisma } from "/prisma/client";
 
-async function insertLink({ title, url }: Pick<Link, "title" | "url">) {
-	await LinksCollection.insertAsync({ title, url, createdAt: new Date() });
-}
+Meteor.methods({
+	createUser: async (name: string, email: string) => {
+		const user = await prisma.user.create({
+			data: {
+				name,
+				email,
+			},
+		});
+		return user;
+	},
+	findAllUsers: async () => {
+		const users = await prisma.user.findMany();
+		return users;
+	},
+});
 
 Meteor.startup(async () => {
-	// If the Links collection is empty, add some data.
-	if ((await LinksCollection.find().countAsync()) === 0) {
-		await insertLink({
-			title: "Do the Tutorial",
-			url: "https://www.meteor.com/tutorials/react/creating-an-app",
-		});
-
-		await insertLink({
-			title: "Follow the Guide",
-			url: "https://guide.meteor.com",
-		});
-
-		await insertLink({
-			title: "Read the Docs",
-			url: "https://docs.meteor.com",
-		});
-
-		await insertLink({
-			title: "Discussions",
-			url: "https://forums.meteor.com",
-		});
-	}
-
-	// We publish the entire Links collection to all clients.
-	// In order to be fetched in real-time to the clients
-	Meteor.publish("links", () => LinksCollection.find());
+	// catch unhandled promise rejections
+	process.on("unhandledRejection", async (err) => {
+		await prisma.$disconnect();
+		console.log(err);
+		process.exit(1);
+	});
 });
